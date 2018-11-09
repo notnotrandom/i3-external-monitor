@@ -55,7 +55,7 @@ Here `i3status.conf` is the regular status bar config, and `i3status-external-ou
 
 ## Setup
 
-The first step is to run `xrandr` without arguments, in order to get a listing of connection ports (something like VGA1, DP1, HDMI1, ...). My assumption is that there will be a fixed set of ports to which external monitors are attached (this is always the case with laptops). Place those ports in the command that is used to defined the `EXT` variable (line 4, replacing the defaults, if needed). Note that error will ensue if there are more than one of those ports with monitors connected.
+I assume that you have `i3` properly configured. The first step is to run `xrandr` without arguments, in order to get a listing of connection ports (something like VGA1, DP1, HDMI1, ...). My assumption is that there will be a fixed set of ports to which external monitors are attached (this is always the case with laptops). Place those ports in the command that is used to defined the `EXT` variable (line 4, replacing the defaults, if needed). Note that error will ensue if there are more than one of those ports with monitors connected. Secondly, it is necessary to alter your `i3`'s main configuration file, adding/incorporating the two variables, mappings, and bar config blocks listed above.
 
 The required config is now done. However, it is very convenient to use an alias; if you use `bash`:
 
