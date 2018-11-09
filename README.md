@@ -1,6 +1,6 @@
 # A reliable way to handle external monitors (in i3) #
 
-Being an awesome minimalist tilling window manager, the minimalism part means that some things in `[i3](https://i3wm.org/)` --- like dealing with external monitors --- are left to the user. This is how I handle it.
+Being an awesome minimalist tilling window manager, the minimalism part means that some things in [`i3`](https://i3wm.org/) --- like dealing with external monitors --- are left to the user. This is how I handle it.
 
 The `monitors.sh` script assumes there is **always** one *internal* monitor (in a laptop this would be the integrated display), and optionally, **one** *external* display (connected through VGA, HDMI, etc). It wraps the relevant `xrand` commands and changes to `i3`'s config file, for the following scenarios:
 
