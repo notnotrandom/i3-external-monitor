@@ -109,6 +109,7 @@ done
 # Notes:
 # 
 # Restarting (instead of reloading) i3 is only needed when changing the place
-# of the tray might be required. I.e., with -i and -e. See also:
-# https://github.com/i3/i3/issues/1329
+# of the tray might be required. I.e., with -i and -e. However, to keep it simple,
+# I do it on every change (changing monitor layout should happen infrequently, so
+# this is not a big problem).
 
