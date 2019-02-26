@@ -22,7 +22,7 @@ set $DEFAULT eDP1
 set $OUTPUT NONE
 ~~~
 
-In presentation mode, which is the only mode where there are two active monitors displaying different content, the `$DEFAULT` variable points to the internal monitor, and the `$OUTPUT` to the external one. This allows setting shortcuts for moving whole workspaces from one output to the other, and also to have different configurations for the status bar/tray icons in each screen (see below). In all other scenarios `$OUTPUT` is set to the dummy value `NONE` (causing `i3` to ignore the respective config blocks), and `$DEFAULT` is set to the internal monitor (when using only this monitor, or when cloning, i.e. **-i** or **-c**), or to the external monitor (when using only this monitor, i.e. **-e**).
+In presentation mode, which is the only mode where there are two active monitors displaying different content, the `$DEFAULT` variable points to the internal monitor, and the `$OUTPUT` to the external one. This allows setting shortcuts for moving whole workspaces from one output to the other, and also to have different configurations for the status bar/tray icons in each screen (see below). In all other scenarios `$OUTPUT` is set to the dummy value `NONE` (causing `i3` to ignore the respective config blocks), and `$DEFAULT` is set to either the internal monitor (when using only this monitor, or when cloning, i.e. **-i** or **-c**), or to the external monitor (when using only this monitor, i.e. **-e**).
 
 I use them in the following two scenarios, in `i3`'s config file (others are possible). Moving between internal and external monitors (only useful in presentation mode):
 
@@ -40,18 +40,22 @@ bar {
   output                $DEFAULT
   tray_output           $DEFAULT
   status_command        i3status -c ~/.config/i3/i3status.conf
+
+  ... rest of your bar settings here...
 }
 
 bar {
   output                $OUTPUT
   tray_output           none
   status_command        i3status -c ~/.config/i3/i3status-external-output.conf
+
+  ... rest of your (perhaps more restricted) bar settings here...
 }
 ~~~
 
 Here `i3status.conf` is the regular status bar config, and `i3status-external-output.conf` is the restricted one (basically the same, but with some items suppressed --- e.g. network information, etc.).
 
-**NOTA BENE**: never set both `$DEFAULT` and `$OUTPUT` to the same value! All kinds of gremlins will ensue otherwise, together with a lot of flickr, as `i3` keep setting the one and only existing display, to one configuration, then to the other, then back to the first, ...
+**NOTA BENE**: never set both `$DEFAULT` and `$OUTPUT` to the same value! All kinds of gremlins will ensue otherwise, together with a lot of flickr, as `i3` will keep setting the one and only existing display, to one configuration, then to the other, then back to the first, ...
 
 ## Setup
 
@@ -63,7 +67,7 @@ The required config is now done. However, it is very convenient to use an alias;
 alias monitors="sh /path/to/monitors.sh"
 ~~~
 
-Still for `bash`, you can enable completion by placing the following in `.bashrc` (change `~/.bash_completion.d/` to anything of your liking; don't forget to create it):
+Still for `bash`, you can enable completion by placing the following in `.bashrc` (change `~/.bash_completion.d/` to anything of your liking; don't forget to create it if necessary):
 
 ~~~ {.shell .numberLines}
 if test -d ~/.bash_completion.d/; then
