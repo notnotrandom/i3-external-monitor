@@ -1,12 +1,33 @@
 #!/bin/bash
 
+# Check pre-requisites.
+
+# Setting EXT variable requires xrandr, so must check for it first.
+if ! [[ -x "$(command -v xrandr)" ]]; then
+  echo "Error: xrandr is not installed." >&2
+  exit 1
+fi
+
 IN="eDP1"
 EXT=$(xrandr | awk '/^(VGA1|HDMI1|HDMI2|DP1|DP2) connected/{print $1}')
 CONFIG="${HOME}/.config/i3/config"
 
+if [[ "$(echo -n "$EXT" | grep -c '^')" -eq 0 ]]; then
+  echo "Error: no external monitor detected." >&2
+  exit 1
+fi
+
+if [[ $(echo -n "$EXT" | grep -c '^') -gt 1 ]]; then
+  echo "Error: more than one external monitor detected." >&2
+  exit 1
+fi
+
+# Pre-requisites check finished.
+# Check arguments.
+
 display_usage() { 
-	echo -e "\nOptions for monitors:"
-	echo -e "-h show this message\n-c clone\n-e external only\n-i internal only\n-p <orientation of ext monitor> presentation mode\n\nOrientation options same as xrand:\n--above, --below, --right-of, --left-of\nWhen switching to modes different than internal, it may be needed to switch to internal as an intermediate step.\n"
+  echo -e "\nOptions for monitors:"
+  echo -e "-h show this message\n-c clone\n-e external only\n-i internal only\n-p <orientation of ext monitor> presentation mode\n\nOrientation options same as xrand:\n--above, --below, --right-of, --left-of\nWhen switching to modes different than internal, it may be needed to switch to internal as an intermediate step.\n"
 } 
 
 # Returns 1 if proper orientation value for xrandr supplied;
@@ -28,27 +49,13 @@ check_orientation() {
   return 1
 }
 
-if ! [[ -x "$(command -v xrandr)" ]]; then
-  echo "Error: xrandr is not installed." >&2
-  exit 1
-fi
-
 if [[ $# -lt 1 || $# -gt 2 ]]
 then
-  echo "Error: exactly one argument is required.\n" >&2
+  echo "Error: at least one and at most two arguments required.\n" >&2
   display_usage
   exit 1
 fi
 
-if [[ "$(echo -n "$EXT" | grep -c '^')" -eq 0 ]]; then
-  echo "Error: no external monitor detected." >&2
-  exit 1
-fi
-
-if [[ $(echo -n "$EXT" | grep -c '^') -gt 1 ]]; then
-  echo "Error: more than one external monitor detected." >&2
-  exit 1
-fi
 
 # Passing only -p (without the required argument) will cause the
 # -p conditional in getopts below to NOT be triggered. Hence must
@@ -59,26 +66,29 @@ then
   exit 1
 fi
 
+# Arguments check finished.
+# Now process them, i.e. actually set up the monitor(s).
+
 while getopts ":cehip:" opt; do
-	case $opt in
+  case $opt in
     c)
       sed 's/^set\s$DEFAULT\s.*/set $DEFAULT '$IN'/' -i $CONFIG
       sed 's/^set\s$OUTPUT\s.*/set $OUTPUT 'NONE'/' -i $CONFIG
-			xrandr --output $IN --primary --auto --output $EXT --auto --same-as $IN
+      xrandr --output $IN --primary --auto --output $EXT --auto --same-as $IN
       i3-msg restart
       ;;
     e)
       sed 's/^set\s$DEFAULT\s.*/set $DEFAULT '$EXT'/' -i $CONFIG
       sed 's/^set\s$OUTPUT\s.*/set $OUTPUT 'NONE'/' -i $CONFIG
       # Switch off internal monitor (which always exists), just to be sure.
-			xrandr --output $IN --off --output $EXT --primary --auto
+      xrandr --output $IN --off --output $EXT --primary --auto
       i3-msg restart
       ;;
-		h)
-			display_usage
-			exit 0
-			;;
-		i)
+    h)
+      display_usage
+      exit 0
+      ;;
+    i)
       sed 's/^set\s$DEFAULT\s.*/set $DEFAULT '$IN'/' -i $CONFIG
       sed 's/^set\s$OUTPUT\s.*/set $OUTPUT 'NONE'/' -i $CONFIG
       # xrandr explicitly disables all external outputs, if any, just to make sure.
@@ -86,8 +96,8 @@ while getopts ":cehip:" opt; do
       [[ ! -z $EXT ]] && CMD+=" --output $EXT --off"
       eval ${CMD}
       i3-msg restart
-			;;
-		p)
+      ;;
+    p)
       sed 's/^set\s$DEFAULT\s.*/set $DEFAULT '$IN'/' -i $CONFIG
       sed 's/^set\s$OUTPUT\s.*/set $OUTPUT '$EXT'/' -i $CONFIG
       ORIENTATION="${OPTARG}"
@@ -97,9 +107,9 @@ while getopts ":cehip:" opt; do
         echo "Wrong orientation option. See -h for help."
         exit 1
       fi
-			xrandr --output $IN --primary --auto --output $EXT --auto $ORIENTATION $IN
+      xrandr --output $IN --primary --auto --output $EXT --auto $ORIENTATION $IN
       i3-msg restart
-			;;
+      ;;
     \?)
       echo "Wrong option (-h for help)."
       ;;
