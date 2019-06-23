@@ -8,17 +8,29 @@ if ! [[ -x "$(command -v xrandr)" ]]; then
   exit 1
 fi
 
+# THIS VAR MUST BE SET BY THE USER, MANUALLY!
 IN="eDP1"
-EXT=$(xrandr | awk '/^(VGA1|HDMI1|HDMI2|DP1|DP2) connected/{print $1}')
+
+# To detect external monitor, capture (from xrandr output) all the connected
+# ones, and filter out the internal one.
+# NB: if there is more than one external monitor connected, we will detect the
+# first one, as ordered by xrandr's output.
+all_connected_monitors=$(xrandr | sed -n 's/^\(.\+\) connected .*/\1/p') # string
+EXT=""
+for i in $all_connected_monitors ; do
+  if [[ "$i" != "$IN" ]] ; then
+    EXT+="$i"
+    echo "Detected external monitor: $EXT"
+    break
+  fi
+done
+
 CONFIG="${HOME}/.config/i3/config"
 
-if [[ "$(echo -n "$EXT" | grep -c '^')" -eq 0 ]]; then
+# Check if there are any external monitors connected (unless -i is given: we
+# don't need external monitors to setup just the internal one).
+if [[ "$1" != "-i" && $(echo -n "$EXT" | grep -c '^') -eq 0 ]]; then
   echo "Error: no external monitor detected." >&2
-  exit 1
-fi
-
-if [[ $(echo -n "$EXT" | grep -c '^') -gt 1 ]]; then
-  echo "Error: more than one external monitor detected." >&2
   exit 1
 fi
 
@@ -67,7 +79,7 @@ then
 fi
 
 # Arguments check finished.
-# Now process them, i.e. actually set up the monitor(s).
+# Now process them, i.e. actually set up the external monitor.
 
 while getopts ":cehip:" opt; do
   case $opt in
@@ -91,10 +103,29 @@ while getopts ":cehip:" opt; do
     i)
       sed 's/^set\s$DEFAULT\s.*/set $DEFAULT '$IN'/' -i $CONFIG
       sed 's/^set\s$OUTPUT\s.*/set $OUTPUT 'NONE'/' -i $CONFIG
-      # xrandr explicitly disables all external outputs, if any, just to make sure.
-      CMD="xrandr --output $IN --primary --auto"
-      [[ ! -z $EXT ]] && CMD+=" --output $EXT --off"
-      eval ${CMD}
+
+      # Have xrandr explicitly disable all external outputs (connected or not),
+      # just to make sure. This is needed, for example, when the user
+      # disconnects the external monitor *before* disabling it through xrandr.
+
+      # This yields a string with the names of all detected monitors.
+      all_monitors=$(xrandr | sed -n 's/^\(.\+\) \(dis\)*connected .*/\1/p')
+
+      # Remove the internal monitor from that string.
+      all_external_monitors=""
+      for i in $all_monitors ; do
+        if [[ "$i" != "$IN" ]] ; then
+          all_external_monitors+="$i "
+        fi
+      done
+
+      # Build xrandr command to disable all external monitors.
+      cmd="xrandr --output $IN --primary --auto"
+      for i in $all_external_monitors ; do
+        cmd+=" --output $i --off"
+      done
+      eval ${cmd} # Run that command, which disables all external outputs.
+
       i3-msg restart
       ;;
     p)
