@@ -70,7 +70,7 @@ if test -d ~/.bash_completion.d/; then
 fi
 ~~~
 
-Now dump the following in a file name `monitors.sh` in that directory:
+Now dump the following in a file named `monitors.sh` in that directory:
 
 ~~~ {.shell .numberLines}
 _monitors()
