@@ -4,7 +4,7 @@ Being an awesome minimalist tilling window manager, the minimalism part means th
 
 The `monitors.sh` script assumes there is **always** one *internal* monitor (in a laptop this would be the integrated display), and a list of external displays (VGA, HDMI, etc), one of which might be connected. It wraps the relevant `xrand` commands and changes to `i3`'s config file, for the following scenarios:
 
-- *Internal monitor only* (**-i** argument): disables all external outputs (connected or otherwise), if any, leaving as active only the one specified in the variable `IN`. In laptops, I set this to the laptop's own monitor (usually `eDP1` or similar). Any windows placed on the external display will be moved to the internal one.
+- *Internal monitor only* (**-i** argument): disables all external outputs (connected or otherwise), if any, leaving as active only the internal monitor (in laptops, I set this to the laptop's own monitor, usually `eDP1` or similar). Any windows placed on the external display will be moved to the internal one.
 
 - *External monitor only* (**-e** argument): disables the internal monitor, and uses only the external one. If there is more than one external monitor connected, it uses the first one in the list, as per `xrand`'s ordering.
 
@@ -25,6 +25,8 @@ Before running the script, some setup of `i3` is required (see explanation below
 set $DEFAULT eDP1
 set $OUTPUT NONE
 ~~~
+
+Replace `eDP1` with the same value used for the `IN` variable above.
 
 **NOTA BENE**: *never* set both `$DEFAULT` and `$OUTPUT` to the same value! All kinds of gremlins will ensue otherwise, together with a lot of flickr, as `i3` will keep setting the one and only existing display, to one configuration, then to the other, then back to the first, ...
 
